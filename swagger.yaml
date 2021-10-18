@@ -14,6 +14,120 @@ tags:
     description: Service issue management
 
 paths:
+  /api/login:
+    post:
+      tags: [ account ]
+      summary: Auth with username and password
+      operationId: login
+      consumes: [ application/json ]
+      parameters:
+        - name: account
+          in: body
+          required: true
+          schema:
+            type: object
+            required: [ username, password ]
+            properties:
+              username:
+                $ref: '#/definitions/Username'
+              password:
+                $ref: '#/definitions/Password'
+      produces: [ application/json ]
+      responses:
+        200:
+          description: API responding
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                default: 200
+              result:
+                type: object
+                properties:
+                  login:
+                    type: boolean
+                  message:
+                    type: string
+                    example: 'only `login: false` have a message'
+                    description: message when login failed
+                  token:
+                    $ref: '#/definitions/JwtToken'
+  /api/register:
+    post:
+      tags: [ account ]
+      summary: Register username with given password
+      operationId: register
+      consumes: [ application/json ]
+      parameters:
+        - name: accountLogin
+          in: body
+          required: true
+          schema:
+            type: object
+            required: [ username, password, email, mobile ]
+            properties:
+              username:
+                $ref: '#/definitions/Username'
+              password:
+                $ref: '#/definitions/Password'
+              email:
+                $ref: '#/definitions/Email'
+              mobile:
+                $ref: '#/definitions/Mobile'
+              address:
+                type: string
+                example: U1510, 100 Road Ave., SomeCity, 0000
+      produces: [ application/json ]
+      responses:
+        200:
+          description: API responding
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                default: 200
+              result:
+                type: object
+                properties:
+                  registered:
+                    type: boolean
+                  token:
+                    $ref: '#/definitions/JwtToken'
+                  message:
+                    type: string
+                    example: 'only `registered: false` have a message'
+                    description: message when login failed
+                  detail:
+                    type: string
+                    example: some detail messages
+                  code:
+                    type: number
+                    example: some code when error
+  /api/ping:
+    parameters:
+      - $ref: '#/parameters/jwtToken'
+    get:
+      tags: [ account ]
+      summary: Ping server to check and renew auth token
+      operationId: ping
+      produces: [ application/json ]
+      responses:
+        401:
+          $ref: '#/responses/401'
+        200:
+          description: API responding
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                default: 200
+              result:
+                type: string
+                default: 'pong'
+                enum: [ pong ]
   /api/customer/add:
     parameters:
       - $ref: '#/parameters/jwtToken'
@@ -301,3 +415,15 @@ definitions:
     format: date-time
     example: 2016-08-29T09:12:33.001Z
     description: ISODate
+  Username:
+    type: string
+    description: contains a-z, A-Z, and 0-9. Start with non digit char
+    example: username00
+    maxLength: 10
+  Password:
+    type: string
+    example: pwd1234
+  JwtToken:
+    type: string
+    example: some.jwt.token
+    description: jwt token for authrization use
