@@ -138,7 +138,8 @@ paths:
         description: the customer data
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/CustomerNoId' }
+            schema:
+              $ref: '#/components/schemas/CustomerNoId'
         required: true
       responses:
         401: { $ref: '#/components/responses/401' }
@@ -214,7 +215,8 @@ paths:
         description: the customer data
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/CustomerNoId' }
+            schema:
+              $ref: '#/components/schemas/CustomerNoId'
         required: true
       responses:
         401: { $ref: '#/components/responses/401' }
@@ -237,6 +239,37 @@ paths:
                         type: string
                         description: message when failed to edit
                       customer: { $ref: '#/components/schemas/Customer' }
+  /api/customer/list/{page}:
+    parameters:
+      - $ref: '#/components/parameters/page'
+    get:
+      tags: [ customer ]
+      summary: List customers under current account
+      operationId: listCustomer
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ listed, page, customers, count ]
+                    properties:
+                      listed: { type: boolean }
+                      page: { type: integer }
+                      customers:
+                        type: array
+                        items: { $ref: '#/components/schemas/Customer' }
+                      count:
+                        type: integer
+                        description: total count of customer under current account
 
 components:
   schemas:
@@ -263,6 +296,7 @@ components:
           example: HR
     CustomerNoId:
       type: object
+      required: [ company, description, email, mobile, name, position ]
       properties:
         name:
           type: string
@@ -375,6 +409,14 @@ components:
       required: true
       schema:
         type: string
+    page:
+      name: page
+      in: path
+      description: '[Optional] page num'
+      required: true
+      schema:
+        type: integer
+        default: 1
   headers:
     X-Token: { $ref: '#/components/schemas/JwtToken' }
   securitySchemes:
