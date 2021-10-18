@@ -521,6 +521,147 @@ paths:
                               items: { $ref: '#/components/schemas/Event' }
                       year: { type: integer }
                       month: { type: integer }
+  /api/issue/add:
+    post:
+      tags: [ issue ]
+      summary: Create issue
+      operationId: addIssue
+      requestBody:
+        description: the issue data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceIssueNoId'
+        required: true
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ added ]
+                    properties:
+                      added: { type: boolean }
+                      message: { type: string, description: message when failed to add }
+                      data: { $ref: '#/components/schemas/ServiceIssue' }
+  /api/issue/id/{id}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [ issue ]
+      summary: Get a Issue by id
+      operationId: getIssue
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ got ]
+                    properties:
+                      got: { type: boolean }
+                      data: { $ref: '#/components/schemas/ServiceIssue' }
+    delete:
+      tags: [ issue ]
+      summary: Delete issue
+      operationId: deleteIssue
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ deleted ]
+                    properties:
+                      deleted: { type: boolean }
+                      data: { $ref: '#/components/schemas/ServiceIssueNoId' }
+    patch:
+      tags: [ issue ]
+      summary: Edit (partial) issue
+      operationId: editIssue
+      requestBody:
+        description: the issue data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceIssueNoId'
+        required: true
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ edited ]
+                    properties:
+                      edited: { type: boolean }
+                      message:
+                        type: string
+                        description: message when failed to edit
+                      data: { $ref: '#/components/schemas/ServiceIssue' }
+  /api/issue/list/{page}:
+    parameters:
+      - $ref: '#/components/parameters/page'
+    get:
+      tags: [ issue ]
+      summary: List pinned issues under current account
+      operationId: listIssues
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ listed, page, data, count ]
+                    properties:
+                      listed: { type: boolean }
+                      page: { type: integer }
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/ServiceIssueWithCustomer' }
+                      count:
+                        type: integer
+                        description: total count of issue under current account
 
 components:
   schemas:
@@ -641,6 +782,44 @@ components:
       properties:
         _id: { $ref: '#/components/schemas/IssueId' }
         customer: { $ref: '#/components/schemas/CustomerId' }
+        title:
+          type: string
+          example: resolve something with bla
+        description:
+          type: string
+          example: do blabla with customer blabla
+        state:
+          type: string
+          enum: [ Upcoming, Ongoing, Completed ]
+        pinned:
+          type: boolean
+          default: false
+          description: mark importance of issue
+    ServiceIssueNoId:
+      type: object
+      required: [ customer, description, state, title ]
+      properties:
+        customer: { $ref: '#/components/schemas/CustomerId' }
+        title:
+          type: string
+          example: resolve something with bla
+        description:
+          type: string
+          example: do blabla with customer blabla
+        state:
+          type: string
+          enum: [ Upcoming, Ongoing, Completed ]
+        pinned:
+          type: boolean
+          default: false
+          description: mark importance of issue
+    ServiceIssueWithCustomer:
+      type: object
+      required: [ _id, customer, customerInfo, description, state, title ]
+      properties:
+        _id: { $ref: '#/components/schemas/IssueId' }
+        customer: { $ref: '#/components/schemas/CustomerId' }
+        customerInfo: { $ref: '#/components/schemas/Customer' }
         title:
           type: string
           example: resolve something with bla
