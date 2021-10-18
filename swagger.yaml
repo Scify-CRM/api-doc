@@ -1,4 +1,5 @@
-swagger: "2.0"
+openapi: 3.0.1
+
 info:
   title: Scify-CRM
   version: 1.0.0
@@ -19,411 +20,368 @@ paths:
       tags: [ account ]
       summary: Auth with username and password
       operationId: login
-      consumes: [ application/json ]
-      parameters:
-        - name: account
-          in: body
-          required: true
-          schema:
-            type: object
-            required: [ username, password ]
-            properties:
-              username:
-                $ref: '#/definitions/Username'
-              password:
-                $ref: '#/definitions/Password'
-      produces: [ application/json ]
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required: [ username, password ]
+              type: object
+              properties:
+                username: { $ref: '#/components/schemas/Username' }
+                password: { $ref: '#/components/schemas/Password' }
+        required: true
       responses:
         200:
           description: API responding
-          schema:
-            type: object
-            properties:
-              status:
-                type: integer
-                default: 200
-              result:
+          content:
+            application/json:
+              schema:
                 type: object
+                required: [ status, result ]
                 properties:
-                  login:
-                    type: boolean
-                  message:
-                    type: string
-                    example: 'only `login: false` have a message'
-                    description: message when login failed
-                  token:
-                    $ref: '#/definitions/JwtToken'
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ login ]
+                    properties:
+                      login: { type: boolean }
+                      message:
+                        type: string
+                        description: message when register failed
+                      token: { $ref: '#/components/schemas/JwtToken' }
+              example:
+                - status: 200
+                  result:
+                    login: true
+                    token: some.jwt.token
+                - status: 200
+                  result:
+                    login: false
+                    message: some message
   /api/register:
     post:
       tags: [ account ]
       summary: Register username with given password
       operationId: register
-      consumes: [ application/json ]
-      parameters:
-        - name: accountLogin
-          in: body
-          required: true
-          schema:
-            type: object
-            required: [ username, password, email, mobile ]
-            properties:
-              username:
-                $ref: '#/definitions/Username'
-              password:
-                $ref: '#/definitions/Password'
-              email:
-                $ref: '#/definitions/Email'
-              mobile:
-                $ref: '#/definitions/Mobile'
-              address:
-                type: string
-                example: U1510, 100 Road Ave., SomeCity, 0000
-      produces: [ application/json ]
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required: [ email, mobile, password, username ]
+              type: object
+              properties:
+                username: { $ref: '#/components/schemas/Username' }
+                password: { $ref: '#/components/schemas/Password' }
+                email: { $ref: '#/components/schemas/Email' }
+                mobile: { $ref: '#/components/schemas/Mobile' }
+                address: { $ref: '#/components/schemas/Address' }
+        required: true
       responses:
         200:
           description: API responding
-          schema:
-            type: object
-            properties:
-              status:
-                type: integer
-                default: 200
-              result:
+          content:
+            application/json:
+              schema:
                 type: object
+                required: [ status, result ]
                 properties:
-                  registered:
-                    type: boolean
-                  token:
-                    $ref: '#/definitions/JwtToken'
-                  message:
-                    type: string
-                    example: 'only `registered: false` have a message'
-                    description: message when login failed
-                  detail:
-                    type: string
-                    example: some detail messages
-                  code:
-                    type: number
-                    example: some code when error
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ registered ]
+                    properties:
+                      registered: { type: boolean }
+                      token: { $ref: '#/components/schemas/JwtToken' }
+                      message:
+                        type: string
+                        description: message when register failed
+                      detail: { type: string }
+                      code: { type: number }
+              example:
+                - status: 200
+                  result:
+                    registered: true
+                    token: some.jwt.token
+                - status: 200
+                  result:
+                    registered: false
+                    code: 11000
+                    message: account already exist
   /api/ping:
-    parameters:
-      - $ref: '#/parameters/jwtToken'
     get:
       tags: [ account ]
       summary: Ping server to check and renew auth token
       operationId: ping
-      produces: [ application/json ]
       responses:
-        401:
-          $ref: '#/responses/401'
+        401: { $ref: '#/components/responses/401' }
         200:
           description: API responding
-          schema:
-            type: object
-            properties:
-              status:
-                type: integer
-                default: 200
-              result:
-                type: string
-                default: 'pong'
-                enum: [ pong ]
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer, default: 200 }
+                  result:
+                    type: string
+                    default: pong
   /api/customer/add:
-    parameters:
-      - $ref: '#/parameters/jwtToken'
     post:
       tags: [ customer ]
       summary: Create customer
       operationId: addCustomer
-      consumes: [ application/json ]
-      parameters:
-        - $ref: '#/parameters/customer'
-      produces: [ application/json ]
+      requestBody:
+        description: the customer data
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerNoId' }
+        required: true
       responses:
-        401:
-          $ref: '#/responses/401'
+        401: { $ref: '#/components/responses/401' }
         200:
           description: API responding
-          headers:
-            XToken:
-              type: string
-              description: jwt token for authrization use
-          schema:
-            type: object
-            properties:
-              status:
-                type: integer
-                default: 200
-              result:
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
                 type: object
+                required: [ status, result ]
                 properties:
-                  added:
-                    type: boolean
-                  message:
-                    type: string
-                    description: message when failed to add
-                  customer:
-                    $ref: '#/definitions/Customer'
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ added ]
+                    properties:
+                      added: { type: boolean }
+                      message: { type: string, description: message when failed to add }
+                      customer: { $ref: '#/components/schemas/Customer' }
   /api/customer/id/{id}:
     parameters:
-      - $ref: '#/parameters/jwtToken'
-      - $ref: '#/parameters/id'
+      - $ref: '#/components/parameters/id'
     get:
       tags: [ customer ]
       summary: Get a Customer by id
       operationId: getCustomer
-      produces: [application/json]
       responses:
-        401:
-          $ref: '#/responses/401'
+        401: { $ref: '#/components/responses/401' }
         200:
           description: API responding
-          headers:
-            XToken:
-              type: string
-              description: jwt token for authrization use
-          schema:
-            type: object
-            properties:
-              status:
-                type: integer
-                default: 200
-              result:
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
                 type: object
+                required: [ status, result ]
                 properties:
-                  got:
-                    type: boolean
-                  data:
-                    $ref: '#/definitions/Customer'
-    patch:
-      tags: [ customer ]
-      summary: Edit (partial) customer
-      operationId: editCustomer
-      consumes: [ application/json ]
-      parameters:
-        - $ref: '#/parameters/customer'
-      produces: [ application/json ]
-      responses:
-        401:
-          $ref: '#/responses/401'
-        200:
-          description: API responding
-          headers:
-            XToken:
-              type: string
-              description: jwt token for authrization use
-          schema:
-            type: object
-            properties:
-              status:
-                type: integer
-                default: 200
-              result:
-                type: object
-                properties:
-                  edited:
-                    type: boolean
-                  message:
-                    type: string
-                    description: message when failed to edit
-                  customer:
-                    $ref: '#/definitions/Customer'
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ got ]
+                    properties:
+                      got: { type: boolean }
+                      data: { $ref: '#/components/schemas/Customer' }
     delete:
       tags: [ customer ]
       summary: Delete customer
       operationId: deleteCustomer
-      produces: [ application/json ]
       responses:
-        401:
-          $ref: '#/responses/401'
+        401: { $ref: '#/components/responses/401' }
         200:
           description: API responding
-          headers:
-            XToken:
-              type: string
-              description: jwt token for authrization use
-          schema:
-            type: object
-            properties:
-              status:
-                type: integer
-                default: 200
-              result:
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
                 type: object
+                required: [ status, result ]
                 properties:
-                  deleted:
-                    type: boolean
-                  customer:
-                    $ref: '#/definitions/CustomerNoId'
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ deleted ]
+                    properties:
+                      deleted: { type: boolean }
+                      customer: { $ref: '#/components/schemas/CustomerNoId' }
+    patch:
+      tags: [ customer ]
+      summary: Edit (partial) customer
+      operationId: editCustomer
+      requestBody:
+        description: the customer data
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerNoId' }
+        required: true
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ edited ]
+                    properties:
+                      edited: { type: boolean }
+                      message:
+                        type: string
+                        description: message when failed to edit
+                      customer: { $ref: '#/components/schemas/Customer' }
 
-parameters:
-  jwtToken:
-    name: "token"
-    in: "header"
-    type: "string"
-    description: "JWT Token with prefix 'Bearer'. Example: `Bearer some.jwt.token`"
-  id:
-    name: "id"
-    in: "path"
-    required: true
-    type: "string"
-    description: "the unique id"
-  customer:
-    name: "customer"
-    in: "body"
-    description: "the customer data"
-    required: true
-    schema:
-      $ref: '#/definitions/CustomerNoId'
+components:
+  schemas:
+    Customer:
+      type: object
+      required: [ _id, company, description, email, mobile, name, position ]
+      properties:
+        _id: { $ref: '#/components/schemas/CustomerId' }
+        name:
+          type: string
+          example: John Doe
+        photo: { $ref: '#/components/schemas/Photo' }
+        mobile: { $ref: '#/components/schemas/Mobile' }
+        email: { $ref: '#/components/schemas/Email' }
+        age: { type: integer, example: 20 }
+        description:
+          type: string
+          example: John Doe is good
+        company:
+          type: string
+          example: SomeBigCompany
+        position:
+          type: string
+          example: HR
+    CustomerNoId:
+      type: object
+      properties:
+        name:
+          type: string
+          example: John Doe
+        photo: { $ref: '#/components/schemas/Photo' }
+        mobile: { $ref: '#/components/schemas/Mobile' }
+        email: { $ref: '#/components/schemas/Email' }
+        age:
+          type: integer
+          example: 20
+        description:
+          type: string
+          example: John Doe is good
+        company:
+          type: string
+          example: SomeBigCompany
+        position:
+          type: string
+          example: HR
+    CustomerId:
+      type: string
+      description: unique id of customers
+      example: 614ac87f3f8bf4a511174da9
+    Event:
+      type: object
+      required: [ _id, customer, datetime, title ]
+      properties:
+        _id: { $ref: '#/components/schemas/EventId' }
+        customer: { $ref: '#/components/schemas/CustomerId' }
+        title:
+          type: string
+          example: meet with the boss
+        description:
+          type: string
+          example: talk about unhiring him
+        datetime: { $ref: '#/components/schemas/DateTime' }
+        endTime: { $ref: '#/components/schemas/DateTime' }
+        venue:
+          type: string
+          example: meeting room 1
+        phtots:
+          type: array
+          items: { $ref: '#/components/schemas/Photo' }
+    EventId:
+      type: string
+      description: unique id of events
+      example: 6151daba8f7400e8047d068e
+    ServiceIssue:
+      type: object
+      required: [ _id, customer, description, state, title ]
+      properties:
+        _id: { $ref: '#/components/schemas/IssueId' }
+        customer: { $ref: '#/components/schemas/CustomerId' }
+        title:
+          type: string
+          example: resolve something with bla
+        description:
+          type: string
+          example: do blabla with customer blabla
+        state:
+          type: string
+          enum: [ Upcoming, Ongoing, Completed ]
+        pinned:
+          type: boolean
+          default: false
+          description: mark importance of issue
+    IssueId:
+      type: string
+      description: unique id of service issues
+      example: 61505bd7ffc3f96cd297a7e7
+    Photo:
+      type: string
+      description: An public url of an image (relative or absolute)
+      example: /files/e17c1e7056d31724e3a
+    Mobile:
+      type: string
+      example: "0404000000"
+      description: Australian mobile number
+    Email:
+      type: string
+      example: example@mail.com
+    DateTime:
+      type: string
+      format: date-time
+      example: 2016-08-29T09:12:33.001Z
+      description: ISODate
+    Username:
+      type: string
+      description: contains a-z, A-Z, and 0-9. Start with non digit char
+      example: username00
+      maxLength: 10
+    Password:
+      type: string
+      example: pwd1234
+    Address:
+      type: string
+      example: U1510, 100 Road Ave., SomeCity, 0000
+    JwtToken:
+      type: string
+      description: jwt token for authrization use
+      example: some.jwt.token
+  responses:
+    401:
+      description: Unauthorized, access token is missing or invalid
+  parameters:
+    id:
+      name: id
+      in: path
+      description: the unique id
+      required: true
+      schema:
+        type: string
+  headers:
+    X-Token: { $ref: '#/components/schemas/JwtToken' }
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 
-responses:
-  401:
-    description: "Unauthorized"
-
-definitions:
-  Customer:
-    type: object
-    required: [ _id, name, company, position, mobile, email, description ]
-    properties:
-      _id:
-        $ref: '#/definitions/CustomerId'
-      name:
-        type: string
-        example: John Doe
-      photo:
-        $ref: '#/definitions/Photo'
-      mobile:
-        $ref: '#/definitions/Mobile'
-      email:
-        $ref: '#/definitions/Email'
-      age:
-        type: integer
-        example: 20
-      description:
-        type: string
-        example: John Doe is good
-      company:
-        type: string
-        example: SomeBigCompany
-      position:
-        type: string
-        example: HR
-  CustomerNoId:
-    type: object
-    properties:
-      name:
-        type: string
-        example: John Doe
-      photo:
-        $ref: '#/definitions/Photo'
-      mobile:
-        $ref: '#/definitions/Mobile'
-      email:
-        $ref: '#/definitions/Email'
-      age:
-        type: integer
-        example: 20
-      description:
-        type: string
-        example: John Doe is good
-      company:
-        type: string
-        example: SomeBigCompany
-      position:
-        type: string
-        example: HR
-  CustomerId:
-    type: string
-    description: unique id of customers
-    example: 614ac87f3f8bf4a511174da9
-  Event:
-    type: object
-    required:
-      - _id
-      - customer
-      - title
-      - datetime
-    properties:
-      _id:
-        $ref: '#/definitions/EventId'
-      customer:
-        $ref: '#/definitions/CustomerId'
-      title:
-        type: string
-        example: meet with the boss
-      description:
-        type: string
-        example: talk about unhiring him
-      datetime:
-        $ref: '#/definitions/DateTime'
-      endTime:
-        $ref: '#/definitions/DateTime'
-      venue:
-        type: string
-        example: meeting room 1
-      phtots:
-        type: array
-        items:
-          $ref: '#/definitions/Photo'
-  EventId:
-    type: string
-    description: unique id of events
-    example: 6151daba8f7400e8047d068e
-  ServiceIssue:
-    type: object
-    required:
-      - _id
-      - title
-      - customer
-      - description
-      - state
-    properties:
-      _id:
-        $ref: '#/definitions/IssueId'
-      customer:
-        $ref: '#/definitions/CustomerId'
-      title:
-        type: string
-        example: resolve something with bla
-      description:
-        type: string
-        example: do blabla with customer blabla
-      state:
-        type: string
-        enum: [ Upcoming, Ongoing, Completed ]
-      pinned:
-        type: boolean
-        default: false
-        description: mark importance of issue
-  IssueId:
-    type: string
-    description: unique id of service issues
-    example: 61505bd7ffc3f96cd297a7e7
-  Photo:
-    type: string
-    description: An public url of an image (relative or absolute)
-    example: '/files/e17c1e7056d31724e3a'
-  Mobile:
-    type: string
-    example: '0404000000'
-    description: Australian mobile number
-  Email:
-    type: string
-    example: example@mail.com
-  DateTime:
-    type: string
-    format: date-time
-    example: 2016-08-29T09:12:33.001Z
-    description: ISODate
-  Username:
-    type: string
-    description: contains a-z, A-Z, and 0-9. Start with non digit char
-    example: username00
-    maxLength: 10
-  Password:
-    type: string
-    example: pwd1234
-  JwtToken:
-    type: string
-    example: some.jwt.token
-    description: jwt token for authrization use
+security:
+  - jwtAuth: []
