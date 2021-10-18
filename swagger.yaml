@@ -14,6 +14,10 @@ tags:
   - name: issue
     description: Service issue management
 
+servers:
+  - url: http://localhost:8080
+  - url: http://localhost
+
 paths:
   /api/login:
     post:
