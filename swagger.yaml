@@ -30,6 +30,10 @@ paths:
           $ref: '#/responses/401'
         200:
           description: API responding
+          headers:
+            XToken:
+              type: string
+              description: jwt token for authrization use
           schema:
             type: object
             properties:
@@ -60,6 +64,10 @@ paths:
           $ref: '#/responses/401'
         200:
           description: API responding
+          headers:
+            XToken:
+              type: string
+              description: jwt token for authrization use
           schema:
             type: object
             properties:
@@ -86,6 +94,10 @@ paths:
           $ref: '#/responses/401'
         200:
           description: API responding
+          headers:
+            XToken:
+              type: string
+              description: jwt token for authrization use
           schema:
             type: object
             properties:
@@ -112,6 +124,10 @@ paths:
           $ref: '#/responses/401'
         200:
           description: API responding
+          headers:
+            XToken:
+              type: string
+              description: jwt token for authrization use
           schema:
             type: object
             properties:
