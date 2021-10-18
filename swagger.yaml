@@ -270,6 +270,257 @@ paths:
                       count:
                         type: integer
                         description: total count of customer under current account
+  /api/event/add:
+    post:
+      tags: [ event ]
+      summary: Create event
+      operationId: addEvent
+      requestBody:
+        description: the event data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventNoId'
+        required: true
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ added ]
+                    properties:
+                      added: { type: boolean }
+                      message: { type: string, description: message when failed to add }
+                      data: { $ref: '#/components/schemas/Event' }
+  /api/event/id/{id}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [ event ]
+      summary: Get a Event by id
+      operationId: getEvent
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ got ]
+                    properties:
+                      got: { type: boolean }
+                      data: { $ref: '#/components/schemas/Event' }
+    delete:
+      tags: [ event ]
+      summary: Delete event
+      operationId: deleteEvent
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ deleted ]
+                    properties:
+                      deleted: { type: boolean }
+                      data: { $ref: '#/components/schemas/EventNoId' }
+    patch:
+      tags: [ event ]
+      summary: Edit (partial) event
+      operationId: editEvent
+      requestBody:
+        description: the event data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventNoId'
+        required: true
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ edited ]
+                    properties:
+                      edited: { type: boolean }
+                      message:
+                        type: string
+                        description: message when failed to edit
+                      data: { $ref: '#/components/schemas/Event' }
+  /api/event/list/{page}:
+    parameters:
+      - $ref: '#/components/parameters/page'
+    get:
+      tags: [ event ]
+      summary: List events under current account
+      operationId: listEvent
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ listed, page, data, count ]
+                    properties:
+                      listed: { type: boolean }
+                      page: { type: integer }
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/EventWithCustomer' }
+                      count:
+                        type: integer
+                        description: total count of event under current account
+  /api/event/list/customer/{id}/{page}:
+    parameters:
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/page'
+    get:
+      tags: [ event ]
+      summary: List events with given customer
+      operationId: listEventOfCustomer
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ listed ]
+                    properties:
+                      listed: { type: boolean }
+                      page: { type: integer }
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Event' }
+                      count:
+                        type: integer
+                        description: total count of event under current account
+                      message:
+                        type: string
+                        description: message when listing fails
+  /api/event/date/{year}/{month}/{date}/{page}:
+    parameters:
+      - $ref: '#/components/parameters/year'
+      - $ref: '#/components/parameters/month'
+      - $ref: '#/components/parameters/date'
+      - $ref: '#/components/parameters/page'
+    get:
+      tags: [ event ]
+      summary: List events on a specific date
+      operationId: listEventOnDate
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ listed, page, data, count, year, month, date ]
+                    properties:
+                      listed: { type: boolean }
+                      page: { type: integer }
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/EventWithCustomer' }
+                      count:
+                        type: integer
+                        description: total count of event under current account
+                      year: { type: integer }
+                      month: { type: integer }
+                      date: { type: integer }
+  /api/event/month/{year}/{month}:
+    parameters:
+      - $ref: '#/components/parameters/year'
+      - $ref: '#/components/parameters/month'
+    get:
+      tags: [ event ]
+      summary: List events in a specific month
+      operationId: listEventInMonth
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ listed, data, year, month ]
+                    properties:
+                      listed: { type: boolean }
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            _id:
+                              type: integer
+                              description: the day in month
+                            events:
+                              type: array
+                              items: { $ref: '#/components/schemas/Event' }
+                      year: { type: integer }
+                      month: { type: integer }
 
 components:
   schemas:
@@ -326,6 +577,46 @@ components:
       properties:
         _id: { $ref: '#/components/schemas/EventId' }
         customer: { $ref: '#/components/schemas/CustomerId' }
+        title:
+          type: string
+          example: meet with the boss
+        description:
+          type: string
+          example: talk about unhiring him
+        datetime: { $ref: '#/components/schemas/DateTime' }
+        endTime: { $ref: '#/components/schemas/DateTime' }
+        venue:
+          type: string
+          example: meeting room 1
+        phtots:
+          type: array
+          items: { $ref: '#/components/schemas/Photo' }
+    EventNoId:
+      type: object
+      required: [ customer, datetime, title ]
+      properties:
+        customer: { $ref: '#/components/schemas/CustomerId' }
+        title:
+          type: string
+          example: meet with the boss
+        description:
+          type: string
+          example: talk about unhiring him
+        datetime: { $ref: '#/components/schemas/DateTime' }
+        endTime: { $ref: '#/components/schemas/DateTime' }
+        venue:
+          type: string
+          example: meeting room 1
+        phtots:
+          type: array
+          items: { $ref: '#/components/schemas/Photo' }
+    EventWithCustomer:
+      type: object
+      required: [ _id, customer, customerInfo, datetime, title ]
+      properties:
+        _id: { $ref: '#/components/schemas/EventId' }
+        customer: { $ref: '#/components/schemas/CustomerId' }
+        customerInfo: { $ref: '#/components/schemas/Customer' }
         title:
           type: string
           example: meet with the boss
@@ -417,6 +708,25 @@ components:
       schema:
         type: integer
         default: 1
+    year:
+      name: year
+      in: path
+      required: true
+      schema:
+        type: integer
+    month:
+      name: month
+      in: path
+      required: true
+      schema:
+        type: integer
+    date:
+      name: date
+      in: path
+      description: day of the month
+      required: true
+      schema:
+        type: integer
   headers:
     X-Token: { $ref: '#/components/schemas/JwtToken' }
   securitySchemes:
