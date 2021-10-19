@@ -133,6 +133,77 @@ paths:
                   result:
                     type: string
                     default: pong
+  /api/dashboard:
+    get:
+      tags: [ account ]
+      summary: Get everything for dashboard
+      operationId: dashboard
+      responses:
+        401: { $ref: '#/components/responses/401' }
+        200:
+          description: API responding
+          headers: { X-Token: { $ref: '#/components/headers/X-Token' } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ status, result ]
+                properties:
+                  status: { type: integer }
+                  result:
+                    type: object
+                    required: [ account, customers, events, issues ]
+                    properties:
+                      account:
+                        type: object
+                        description: current account
+                        required: [ email, mobile, username ]
+                        properties:
+                          username: { $ref: '#/components/schemas/Username' }
+                          email: { $ref: '#/components/schemas/Email' }
+                          mobile: { $ref: '#/components/schemas/Mobile' }
+                          address: { $ref: '#/components/schemas/Address' }
+                      customers:
+                        type: array
+                        description: recently edited customers (with updateAt timestamp)
+                        items: { $ref: '#/components/schemas/Customer' }
+                        example:
+                          _id: 614ac87f3f8bf4a511174da9
+                          name: John Doe
+                          photo: /files/e17c1e7056d31724e3a
+                          mobile: 0404000000
+                          email: example@mail.com
+                          age: 20
+                          description: John Doe is good
+                          company: SomeBigCompany
+                          position: HR
+                          updatedAt: "2021-10-19T05:24:22.624Z"
+                      events:
+                        description: events in the current month
+                        type: array
+                        items: { $ref: '#/components/schemas/EventWithCustomer' }
+                      issues:
+                        type: array
+                        description: recently edited issues (with updateAt timestamp)
+                        items: { $ref: '#/components/schemas/ServiceIssueWithCustomer' }
+                        example:
+                          customer: 615044975db117b9d4cffe58
+                          description: ddd1
+                          state: Upcoming
+                          pinned: true
+                          title: asdfasdfasdfasdfasdfas
+                          _id: 61505c2506f81cd96c73298b
+                          updatedAt: 2021-10-12T12:51:53.154Z
+                          customerInfo:
+                            _id: 614ac87f3f8bf4a511174da9
+                            name: John Doe
+                            photo: /files/e17c1e7056d31724e3a
+                            mobile: 0404000000
+                            email: example@mail.com
+                            age: 20
+                            description: John Doe is good
+                            company: SomeBigCompany
+                            position: HR
   /api/customer/add:
     post:
       tags: [ customer ]
